@@ -1,0 +1,122 @@
+[
+  {
+    "look": 1,
+    "players": 9018,
+    "diff_pp": -0.735,
+    "z": -0.898,
+    "obf_bound": 6.197,
+    "obf_stop": false,
+    "naive_stop": false,
+    "msprt_ratio": 0.81,
+    "msprt_stop": false,
+    "always_valid_p": 1.0
+  },
+  {
+    "look": 2,
+    "players": 18037,
+    "diff_pp": -0.81,
+    "z": -1.394,
+    "obf_bound": 4.382,
+    "obf_stop": false,
+    "naive_stop": false,
+    "msprt_ratio": 1.04,
+    "msprt_stop": false,
+    "always_valid_p": 0.9615
+  },
+  {
+    "look": 3,
+    "players": 27056,
+    "diff_pp": -0.809,
+    "z": -1.717,
+    "obf_bound": 3.584,
+    "obf_stop": false,
+    "naive_stop": false,
+    "msprt_ratio": 1.42,
+    "msprt_stop": false,
+    "always_valid_p": 0.7042
+  },
+  {
+    "look": 4,
+    "players": 36075,
+    "diff_pp": -1.028,
+    "z": -2.514,
+    "obf_bound": 3.117,
+    "obf_stop": false,
+    "naive_stop": true,
+    "msprt_ratio": 5.67,
+    "msprt_stop": false,
+    "always_valid_p": 0.1764
+  },
+  {
+    "look": 5,
+    "players": 45094,
+    "diff_pp": -0.786,
+    "z": -2.148,
+    "obf_bound": 2.814,
+    "obf_stop": false,
+    "naive_stop": true,
+    "msprt_ratio": 2.63,
+    "msprt_stop": false,
+    "always_valid_p": 0.1764
+  },
+  {
+    "look": 6,
+    "players": 54113,
+    "diff_pp": -0.661,
+    "z": -1.978,
+    "obf_bound": 2.599,
+    "obf_stop": false,
+    "naive_stop": true,
+    "msprt_ratio": 1.84,
+    "msprt_stop": false,
+    "always_valid_p": 0.1764
+  },
+  {
+    "look": 7,
+    "players": 63132,
+    "diff_pp": -0.688,
+    "z": -2.222,
+    "obf_bound": 2.436,
+    "obf_stop": false,
+    "naive_stop": true,
+    "msprt_ratio": 2.81,
+    "msprt_stop": false,
+    "always_valid_p": 0.1764
+  },
+  {
+    "look": 8,
+    "players": 72151,
+    "diff_pp": -0.852,
+    "z": -2.938,
+    "obf_bound": 2.31,
+    "obf_stop": true,
+    "naive_stop": true,
+    "msprt_ratio": 14.91,
+    "msprt_stop": false,
+    "always_valid_p": 0.0671
+  },
+  {
+    "look": 9,
+    "players": 81170,
+    "diff_pp": -0.816,
+    "z": -2.988,
+    "obf_bound": 2.207,
+    "obf_stop": true,
+    "naive_stop": true,
+    "msprt_ratio": 16.79,
+    "msprt_stop": false,
+    "always_valid_p": 0.0596
+  },
+  {
+    "look": 10,
+    "players": 90189,
+    "diff_pp": -0.82,
+    "z": -3.164,
+    "obf_bound": 2.123,
+    "obf_stop": true,
+    "naive_stop": true,
+    "msprt_ratio": 27.33,
+    "msprt_stop": true,
+    "always_valid_p": 0.0366
+  }
+]

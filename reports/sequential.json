@@ -1,0 +1,54 @@
+{
+  "n_per_arm_max": 20000,
+  "looks": 10,
+  "sims": 4000,
+  "baseline": 0.19,
+  "obf_bounds": [
+    6.197,
+    4.382,
+    3.584,
+    3.117,
+    2.814,
+    2.599,
+    2.436,
+    2.31,
+    2.207,
+    2.123
+  ],
+  "pocock_bounds": [
+    2.655,
+    2.623,
+    2.59,
+    2.562,
+    2.539,
+    2.52,
+    2.506,
+    2.492,
+    2.483,
+    2.473
+  ],
+  "null": {
+    "fixed_sample_final_look": 0.052,
+    "naive_peeking_any_look": 0.188,
+    "obf": 0.05625,
+    "pocock": 0.05425,
+    "msprt": 0.00975,
+    "avg_sample_fraction_at_stop": {
+      "obf": 0.9875,
+      "pocock": 0.9726999999999999,
+      "msprt": 0.9959
+    }
+  },
+  "effect": {
+    "fixed_sample_final_look": 0.541,
+    "naive_peeking_any_look": 0.66825,
+    "obf": 0.51575,
+    "pocock": 0.42775,
+    "msprt": 0.21175,
+    "avg_sample_fraction_at_stop": {
+      "obf": 0.8665999999999999,
+      "pocock": 0.8261,
+      "msprt": 0.935475
+    }
+  }
+}

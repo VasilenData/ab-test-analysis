@@ -1,0 +1,55 @@
+{
+  "by_correlation": [
+    {
+      "rho": 0.0,
+      "mean_estimate": 0.3003228701864824,
+      "true_effect": 0.3,
+      "variance_ratio_observed": 0.9999057399556974,
+      "variance_ratio_theory": 1.0,
+      "ci_coverage": 0.9595,
+      "sample_size_needed_vs_raw": 0.9999057399556974
+    },
+    {
+      "rho": 0.3,
+      "mean_estimate": 0.29981368109836454,
+      "true_effect": 0.3,
+      "variance_ratio_observed": 0.9101046947008368,
+      "variance_ratio_theory": 0.91,
+      "ci_coverage": 0.958,
+      "sample_size_needed_vs_raw": 0.9101046947008368
+    },
+    {
+      "rho": 0.5,
+      "mean_estimate": 0.2996424271677498,
+      "true_effect": 0.3,
+      "variance_ratio_observed": 0.7498310862812475,
+      "variance_ratio_theory": 0.75,
+      "ci_coverage": 0.947,
+      "sample_size_needed_vs_raw": 0.7498310862812475
+    },
+    {
+      "rho": 0.7,
+      "mean_estimate": 0.2998553450703696,
+      "true_effect": 0.3,
+      "variance_ratio_observed": 0.509906968522091,
+      "variance_ratio_theory": 0.51,
+      "ci_coverage": 0.957,
+      "sample_size_needed_vs_raw": 0.509906968522091
+    },
+    {
+      "rho": 0.9,
+      "mean_estimate": 0.2999883149975994,
+      "true_effect": 0.3,
+      "variance_ratio_observed": 0.19005536772265014,
+      "variance_ratio_theory": 0.18999999999999995,
+      "ci_coverage": 0.94,
+      "sample_size_needed_vs_raw": 0.19005536772265014
+    }
+  ],
+  "post_treatment_covariate": {
+    "true_effect": 0.55,
+    "note": "total effect is direct + via covariate (0.30 + 0.25)",
+    "cuped_estimate_mean": 0.2817510105947518,
+    "bias_vs_total": -0.2682489894052482
+  }
+}
