@@ -8,16 +8,27 @@ from __future__ import annotations
 import numpy as np
 from scipy import optimize, stats
 
+from .abtest import _alpha, _positive_integer
+
+
+def _fractions(t, alpha):
+    _alpha(alpha)
+    t = np.asarray(t, dtype=float)
+    if not np.isfinite(t).all() or ((t < 0) | (t > 1)).any():
+        raise ValueError("information fractions must be finite and in [0, 1]")
+    return t
+
 
 def spend_obf(t: np.ndarray, alpha: float = 0.05) -> np.ndarray:
     """Lan-DeMets O'Brien-Fleming-type cumulative alpha spent at information fraction t (two-sided)."""
-    t = np.asarray(t, dtype=float)
-    return 2 - 2 * stats.norm.cdf(stats.norm.ppf(1 - alpha / 2) / np.sqrt(t))
+    t = _fractions(t, alpha)
+    z = np.divide(stats.norm.ppf(1 - alpha / 2), np.sqrt(t), out=np.full_like(t, np.inf), where=t > 0)
+    return 2 * stats.norm.sf(z)
 
 
 def spend_pocock(t: np.ndarray, alpha: float = 0.05) -> np.ndarray:
     """Lan-DeMets Pocock-type cumulative alpha spent at information fraction t."""
-    t = np.asarray(t, dtype=float)
+    t = _fractions(t, alpha)
     return alpha * np.log(1 + (np.e - 1) * t)
 
 
@@ -32,8 +43,17 @@ def gs_boundaries(looks: int, alpha: float = 0.05, spending=spend_obf, grid: int
     Solved by numerical integration of the Brownian-motion density through the continuation region
     (Armitage-McPherson-Rowe recursion), so each look spends exactly its share of alpha.
     """
+    _positive_integer(looks, "looks")
+    _positive_integer(grid, "grid")
+    _alpha(alpha)
+    if grid < 101:
+        raise ValueError("numerical integration requires at least 101 grid points")
     t = np.arange(1, looks + 1) / looks
     cum = spending(t, alpha)
+    cum = np.asarray(cum, dtype=float)
+    if (cum.shape != t.shape or not np.isfinite(cum).all() or (cum < 0).any()
+            or (cum > alpha + 1e-12).any() or (np.diff(cum) < 0).any()):
+        raise ValueError("cumulative spending must match the looks, increase and stay within alpha")
     spend = np.diff(np.concatenate([[0.0], cum]))
     bounds = np.empty(looks)
     prev_x = prev_f = None
@@ -62,10 +82,16 @@ def msprt_normal(theta_hat: float, var_hat: float, tau: float) -> float:
     theta_hat: observed difference, var_hat: its estimated variance. Reject when ratio >= 1/alpha;
     with plug-in estimated variance, the running minimum is an approximation, not an exact guarantee.
     """
+    if not np.isfinite([theta_hat, var_hat, tau]).all() or var_hat <= 0 or tau <= 0:
+        raise ValueError("effect must be finite; variance and prior width must be finite and positive")
     v, t2 = var_hat, tau**2
     return float(np.sqrt(v / (v + t2)) * np.exp(t2 * theta_hat**2 / (2 * v * (v + t2))))
 
 
 def always_valid_p(ratios: np.ndarray) -> np.ndarray:
     """Running minimum of min(1, 1/ratio); validity depends on the input likelihood-ratio process."""
-    return np.minimum.accumulate(np.minimum(1.0, 1.0 / np.asarray(ratios, dtype=float)))
+    ratios = np.asarray(ratios, dtype=float)
+    if ratios.ndim != 1 or not len(ratios) or np.isnan(ratios).any() or (ratios < 0).any():
+        raise ValueError("likelihood ratios must be a nonempty nonnegative vector without NaN")
+    inverse = np.divide(1.0, ratios, out=np.full_like(ratios, np.inf), where=ratios > 0)
+    return np.minimum.accumulate(np.minimum(1.0, inverse))
