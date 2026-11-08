@@ -5,6 +5,18 @@ import numpy as np
 from scipy import stats
 
 
+def _alpha(alpha: float) -> None:
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must be strictly between 0 and 1")
+
+
+def _counts(x: int, n: int) -> None:
+    if (isinstance(x, (bool, np.bool_)) or isinstance(n, (bool, np.bool_))
+            or not isinstance(x, (int, np.integer)) or not isinstance(n, (int, np.integer))
+            or n <= 0 or not 0 <= x <= n):
+        raise ValueError("counts must be integers with n > 0 and 0 <= successes <= n")
+
+
 def srm_check(n_a: int, n_b: int, expected_ratio: float = 0.5) -> float:
     """Sample-ratio-mismatch chi-square p-value. p < 0.001 means the split is broken."""
     total = n_a + n_b
@@ -14,16 +26,24 @@ def srm_check(n_a: int, n_b: int, expected_ratio: float = 0.5) -> float:
 
 def two_prop_test(x_a: int, n_a: int, x_b: int, n_b: int, alpha: float = 0.05) -> dict:
     """Two-sided pooled z-test, unpooled Wald CI for the absolute lift (b - a)."""
+    _counts(x_a, n_a)
+    _counts(x_b, n_b)
+    _alpha(alpha)
     p_a, p_b = x_a / n_a, x_b / n_b
     pool = (x_a + x_b) / (n_a + n_b)
     se_pool = np.sqrt(pool * (1 - pool) * (1 / n_a + 1 / n_b))
-    z = (p_b - p_a) / se_pool
-    p = 2 * (1 - stats.norm.cdf(abs(z)))
+    z = (p_b - p_a) / se_pool if se_pool > 0 else 0.0
+    p = 2 * stats.norm.sf(abs(z))
     se = np.sqrt(p_a * (1 - p_a) / n_a + p_b * (1 - p_b) / n_b)
     q = stats.norm.ppf(1 - alpha / 2)
     d = p_b - p_a
-    return {"p_a": p_a, "p_b": p_b, "diff": d, "ci_low": d - q * se, "ci_high": d + q * se,
-            "rel_lift": d / p_a, "z": float(z), "p_value": float(p)}
+    # Zero observed variance does not establish zero population uncertainty.
+    # The normal CI is unavailable for two constant arms; relative lift is
+    # undefined when the control conversion rate is zero.
+    return {"p_a": p_a, "p_b": p_b, "diff": d,
+            "ci_low": d - q * se if se > 0 else None,
+            "ci_high": d + q * se if se > 0 else None,
+            "rel_lift": d / p_a if p_a > 0 else None, "z": float(z), "p_value": float(p)}
 
 
 def mde(p_base: float, n_per_arm: int, alpha: float = 0.05, power: float = 0.8) -> float:
