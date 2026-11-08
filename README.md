@@ -1,5 +1,7 @@
 # A/B Test Analysis: did moving the gate hurt retention?
 
+[![ci](https://github.com/VasilenData/ab-test-analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/VasilenData/ab-test-analysis/actions/workflows/ci.yml)
+
 A tested experimentation toolkit (fixed-sample tests, sequential testing, CUPED) and a full analysis of a real public A/B test: the mobile game Cookie Cats moved its first progression gate from level 30 to level 40. 90,189 players were split between the two versions.
 
 **Result:** moving the gate to level 40 **lowered day-7 retention by 0.82 percentage points** (19.02% to 18.20%, 95% CI -1.33 to -0.31, p = 0.0016, survives Holm correction). Day-1 retention moved the same direction but is not significant (p = 0.074). **Recommendation: keep the gate at level 30.**
@@ -47,6 +49,16 @@ Simulation, 10 looks, 20,000 players per arm at most, baseline 19%, 4,000 runs (
 | 0.9 | 0.19 | 0.19 | 0.300 | 94.0% |
 
 Estimates stay unbiased and intervals keep their coverage. A covariate measured after assignment breaks this: when the treatment moves the covariate, CUPED returned 0.28 against a total effect of 0.55, a bias of -0.27. The covariate must be pre-experiment.
+
+## Decisions and trade-offs
+- **Alpha spending over a fixed look schedule.** Lan-DeMets spending functions let the number and timing of looks vary without breaking the error rate. This implementation assumes equally spaced looks; unequal spacing is a small change to the information fractions and is not built or tested.
+- **O'Brien-Fleming as the default boundary.** It spends almost no alpha early, so an early look rarely stops the test on noise, and it ends near the fixed-sample cutoff (2.12 at look 10 vs 1.96). The price in the simulation is about 2.5 points of power against one look at the end (51.6% vs 54.1%). Pocock stops earlier on average but gave 42.8% power.
+- **A solver written from scratch instead of a library.** I wrote the boundary solver so I could test it: it must reproduce the textbook Pocock constant and hold 5% error over 400,000 simulated paths. Both checks are in the test suite.
+- **mSPRT prior width (tau) not tuned.** One value, 0.01, chosen once. Tuning it to this simulation would flatter the method, so I did not.
+- **Frequentist throughout.** The Bayesian check is a sanity number, not a sequential Bayesian design.
+
+## Next steps
+Unequal look spacing, a binomial-exact boundary check for small samples, and CUPED on a dataset that has a genuine pre-experiment metric.
 
 ## Limits, stated plainly
 - Public dataset, one game, one test. Players were randomly assigned by the game studio; I did not run the experiment.
