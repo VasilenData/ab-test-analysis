@@ -13,7 +13,7 @@ A tested experimentation toolkit (fixed-sample tests, sequential testing, CUPED)
 - **Two-proportion z-test** with an absolute-lift confidence interval for both retention metrics.
 - **Multiple-testing correction** (Holm) across the two retention metrics.
 - **Bayesian check:** P(gate_40 better) is 0.1% for day-7 retention.
-- **A/A validation:** randomly splitting the data into fake arms gives 5.0% and 5.4% false positives, so the test is calibrated.
+- **A/A validation:** randomly splitting the data into fake arms gives 5.0% and 5.4% false positives, close to the nominal 5% in this simulation.
 - **Power:** with this sample the minimum detectable day-7 effect is 0.74 pp. Detecting 0.5 pp would need about 97,700 players per arm.
 - **Engagement (game rounds)** compared after winsorizing at the 99th percentile (493 rounds; the raw max is 49,854, a likely bot or logging error), with a bootstrap CI (-1.30 to +0.72 rounds, no clear difference) and Mann-Whitney (p = 0.050).
 
@@ -24,7 +24,7 @@ Peeking at a fixed-sample test inflates false positives. `src/sequential.py` imp
 
 Simulation, 10 looks, 20,000 players per arm at most, baseline 19%, 4,000 runs (`python -m src.simulate`):
 
-| Rule | False positives, no effect | Power, true effect +0.82 pp | Avg. share of sample used before stopping |
+| Rule | False positives, no effect | Power, true effect +0.82 pp | Avg. share of sample used (+0.82 pp effect) |
 |---|---|---|---|
 | Fixed sample, one look | 5.2% | 54.1% | 100% |
 | Naive peeking at 1.96 | **18.8%** | 66.8% | n/a (invalid) |
@@ -32,8 +32,8 @@ Simulation, 10 looks, 20,000 players per arm at most, baseline 19%, 4,000 runs (
 | Pocock | 5.4% | 42.8% | 83% |
 | mSPRT (tau 0.01) | 1.0% | 21.2% | 94% |
 
-- Boundaries are checked by Monte Carlo: 400,000 null paths give overall error 4.96% (OBF, 5 looks) and 4.95% (OBF, 10 looks). The 5-look Pocock value (2.41 to 2.44) matches the textbook constant 2.413.
-- The 5.6% OBF figure is within simulation error of 5%; 4,000 runs give about plus or minus 0.35 pp.
+- The test suite checks five-look O'Brien-Fleming boundaries on 200,000 simulated normal null paths, allowing a 0.4 percentage-point tolerance around 5%. A separate test checks five-look Pocock boundaries within 0.05 of the textbook constant 2.413.
+- The 5.6% OBF figure is a Monte Carlo estimate from 4,000 runs under the stated binomial setup, not a guarantee of exactly 5% error. The sample-use column describes the positive-effect scenario; under no effect, average sample use is about 99% for OBF, 97% for Pocock and 100% for mSPRT.
 - The normal-mixture approximation was conservative in this simulation and paid in power. A plug-in variance estimate on binary outcomes does not establish an exact anytime-valid guarantee. A different prior width (tau) would shift that trade-off; I used one value and did not tune it.
 - **Cookie Cats replay (illustration only).** The data has no timestamps, so I replayed the players in random order. Naive peeking would have declared a winner at look 4 (36,075 players, z = -2.51) and the z-score then drifted back toward 1.98. O'Brien-Fleming stops at look 8 (72,151 players, z = -2.94 vs bound 2.31). The normal-mixture running p-value estimate reaches 0.037 at the final look. Details: `reports/cookie_cats_sequential.json`.
 
@@ -53,7 +53,7 @@ Estimates stay unbiased and intervals keep their coverage. A covariate measured 
 ## Decisions and trade-offs
 - **Alpha spending over a fixed look schedule.** Lan-DeMets spending functions let the number and timing of looks vary without breaking the error rate. This implementation assumes equally spaced looks; unequal spacing is a small change to the information fractions and is not built or tested.
 - **O'Brien-Fleming as the default boundary.** It spends almost no alpha early, so an early look rarely stops the test on noise, and it ends near the fixed-sample cutoff (2.12 at look 10 vs 1.96). The price in the simulation is about 2.5 points of power against one look at the end (51.6% vs 54.1%). Pocock stops earlier on average but gave 42.8% power.
-- **A solver written from scratch instead of a library.** I wrote the boundary solver so I could test it: it must reproduce the textbook Pocock constant and hold 5% error over 400,000 simulated paths. Both checks are in the test suite.
+- **A solver written from scratch instead of a library.** I wrote the boundary solver so I could test it against the textbook Pocock constant and a five-look, 200,000-path normal-null simulation. Those regression checks are in the test suite; they do not establish validity for every outcome distribution or monitoring schedule.
 - **mSPRT prior width (tau) not tuned.** One value, 0.01, chosen once. Tuning it to this simulation would flatter the method, so I did not.
 - **Frequentist throughout.** The Bayesian check is a sanity number, not a sequential Bayesian design.
 
