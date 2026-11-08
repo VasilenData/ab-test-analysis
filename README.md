@@ -18,7 +18,7 @@ A tested experimentation toolkit (fixed-sample tests, sequential testing, CUPED)
 - **Engagement (game rounds)** compared after winsorizing at the 99th percentile (493 rounds; the raw max is 49,854, a likely bot or logging error), with a bootstrap CI (-1.30 to +0.72 rounds, no clear difference) and Mann-Whitney (p = 0.050).
 
 ## Sequential testing: looking early without lying
-Peeking at a fixed-sample test inflates false positives. `src/sequential.py` implements Lan-DeMets alpha-spending boundaries (O'Brien-Fleming and Pocock, solved by numerical integration, no external library) and an always-valid mSPRT.
+Peeking at a fixed-sample test inflates false positives. `src/sequential.py` implements Lan-DeMets alpha-spending boundaries (O'Brien-Fleming and Pocock, solved by numerical integration, no external library) and a normal-mixture mSPRT approximation.
 
 ![Sequential testing](reports/sequential.png)
 
@@ -34,8 +34,8 @@ Simulation, 10 looks, 20,000 players per arm at most, baseline 19%, 4,000 runs (
 
 - Boundaries are checked by Monte Carlo: 400,000 null paths give overall error 4.96% (OBF, 5 looks) and 4.95% (OBF, 10 looks). The 5-look Pocock value (2.41 to 2.44) matches the textbook constant 2.413.
 - The 5.6% OBF figure is within simulation error of 5%; 4,000 runs give about plus or minus 0.35 pp.
-- mSPRT is conservative here: it can be stopped at any time, but it pays in power. A different prior width (tau) would shift that trade-off; I used one value and did not tune it.
-- **Cookie Cats replay (illustration only).** The data has no timestamps, so I replayed the players in random order. Naive peeking would have declared a winner at look 4 (36,075 players, z = -2.51) and the z-score then drifted back toward 1.98. O'Brien-Fleming stops at look 8 (72,151 players, z = -2.94 vs bound 2.31). The always-valid p-value reaches 0.037 at the final look. Details: `reports/cookie_cats_sequential.json`.
+- The normal-mixture approximation was conservative in this simulation and paid in power. A plug-in variance estimate on binary outcomes does not establish an exact anytime-valid guarantee. A different prior width (tau) would shift that trade-off; I used one value and did not tune it.
+- **Cookie Cats replay (illustration only).** The data has no timestamps, so I replayed the players in random order. Naive peeking would have declared a winner at look 4 (36,075 players, z = -2.51) and the z-score then drifted back toward 1.98. O'Brien-Fleming stops at look 8 (72,151 players, z = -2.94 vs bound 2.31). The normal-mixture running p-value estimate reaches 0.037 at the final look. Details: `reports/cookie_cats_sequential.json`.
 
 ## CUPED: same test, fewer players
 `src/cuped.py` adjusts the outcome with a pre-experiment covariate. Simulation, 5,000 players per arm, true effect 0.30, 2,000 runs per row (`reports/cuped.json`):
@@ -71,7 +71,7 @@ Unequal look spacing, a binomial-exact boundary check for small samples, and CUP
 ## Run it
 ```
 pip install -r requirements.txt
-python -m pytest -q          # 25 tests
+python -m pytest -q          # regression and simulation tests
 python -m src.analyze        # writes reports/results.json
 python -m src.plot           # writes reports/lift.png
 python -m src.simulate       # sequential + CUPED studies, about 15 s
@@ -81,3 +81,8 @@ Data: `data/cookie_cats.csv`, the public Cookie Cats dataset (90,189 rows), orig
 
 ## Stack
 Python, NumPy, pandas, SciPy, matplotlib, pytest, ruff, GitHub Actions.
+
+## Inference edge cases
+Proportion tests validate integer counts and return an undefined relative lift (`None`) when the control conversion rate is zero. Two constant arms do not get a spurious zero-width Wald interval; CI fields are `None`, and sparse/boundary data need a separately chosen exact or score method. The CUPED mean comparison now uses Welch-Satterthwaite degrees of freedom and a Student-t interval, checked against [SciPy Welch inference](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html). Misaligned covariates and undefined/constant-variance inference fail explicitly.
+
+The CUPED simulation was regenerated with Welch t inference (seed 11, 2,000 runs for each of five correlations, 5,000 players per arm). The rounded table is unchanged; `reports/cuped.json` contains the refreshed values. The large-sample Cookie Cats proportion results are unaffected by these boundary guards.
