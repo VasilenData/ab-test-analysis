@@ -11,3 +11,4 @@ jobs:
       - run: ruff check .
       - run: python -m pytest -q
       - run: python -m src.analyze > /dev/null
+      - run: python -m src.simulate > /dev/null
