@@ -30,7 +30,7 @@ out["rounds"] = {"cap_p99": float(cap), "mean_a": float(wa.mean()), "mean_b": fl
                  "mannwhitney_p": float(stats.mannwhitneyu(a.sum_gamerounds, b.sum_gamerounds).pvalue)}
 out["power"] = {"mde_ret7_abs": mde(float(a.retention_7.mean()), len(a)),
                 "n_needed_for_0.5pp_ret7": sample_size(float(a.retention_7.mean()), 0.005)}
-# segment: players who never reached the gate (<30 rounds) cannot be affected by it
+# Descriptive only: rounds played is post-treatment and cannot define a causal subgroup.
 seg = {}
 for name, mask in {"under_30_rounds": df.sum_gamerounds < 30, "30_plus_rounds": df.sum_gamerounds >= 30}.items():
     s = df[mask]; sa, sb = s[s.version == "gate_30"], s[s.version == "gate_40"]

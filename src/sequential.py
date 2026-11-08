@@ -1,7 +1,7 @@
-"""Sequential testing: group-sequential boundaries (Lan-DeMets alpha spending) and always-valid mSPRT.
+"""Sequential testing: group-sequential boundaries (Lan-DeMets alpha spending) and a normal-mixture mSPRT approximation.
 
 Peeking at a fixed-sample test inflates false positives. These tools let you look repeatedly and keep the
-error rate at alpha.
+error rate near alpha under the simulated assumptions.
 """
 from __future__ import annotations
 
@@ -60,12 +60,12 @@ def msprt_normal(theta_hat: float, var_hat: float, tau: float) -> float:
     """Mixture-SPRT likelihood ratio for H0: theta = 0 with a N(0, tau^2) mixing prior.
 
     theta_hat: observed difference, var_hat: its estimated variance. Reject when ratio >= 1/alpha;
-    the running minimum of 1/ratio is an always-valid p-value.
+    with plug-in estimated variance, the running minimum is an approximation, not an exact guarantee.
     """
     v, t2 = var_hat, tau**2
     return float(np.sqrt(v / (v + t2)) * np.exp(t2 * theta_hat**2 / (2 * v * (v + t2))))
 
 
 def always_valid_p(ratios: np.ndarray) -> np.ndarray:
-    """Running minimum of min(1, 1/ratio): valid at any stopping time."""
+    """Running minimum of min(1, 1/ratio); validity depends on the input likelihood-ratio process."""
     return np.minimum.accumulate(np.minimum(1.0, 1.0 / np.asarray(ratios, dtype=float)))

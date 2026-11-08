@@ -29,7 +29,7 @@
     },
     {
       "rho": 0.7,
-      "mean_estimate": 0.2998553450703696,
+      "mean_estimate": 0.29985534507036954,
       "true_effect": 0.3,
       "variance_ratio_observed": 0.509906968522091,
       "variance_ratio_theory": 0.51,
