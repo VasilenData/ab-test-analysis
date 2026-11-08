@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from src.abtest import *
 
@@ -41,3 +42,22 @@ def test_bayes_clear_winner():
 def test_aa_false_positive_rate_near_alpha():
     y = (np.random.default_rng(2).random(20000) < 0.3).astype(int)
     assert 0.02 < aa_false_positive_rate(y, sims=400) < 0.09
+
+
+def test_zero_control_conversions_have_undefined_relative_lift():
+    r = two_prop_test(0, 100, 10, 100)
+    assert r["diff"] == 0.1 and r["rel_lift"] is None and 0 < r["p_value"] < 0.01
+
+
+@pytest.mark.parametrize("successes", [0, 100])
+def test_constant_equal_arms_do_not_crash_or_claim_zero_uncertainty(successes):
+    r = two_prop_test(successes, 100, successes, 100)
+    assert r["p_value"] == 1 and r["z"] == 0
+    assert r["ci_low"] is None and r["ci_high"] is None
+
+
+@pytest.mark.parametrize("args", [(1, 0, 1, 10), (11, 10, 1, 10), (-1, 10, 1, 10),
+                                  (1.5, 10, 1, 10), (True, 10, 1, 10)])
+def test_invalid_conversion_counts_fail_clearly(args):
+    with pytest.raises(ValueError, match="counts"):
+        two_prop_test(*args)

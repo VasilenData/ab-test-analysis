@@ -1,4 +1,6 @@
 import numpy as np
+import pytest
+from scipy import stats
 
 from src.cuped import cuped_adjust, cuped_test, diff_in_means
 
@@ -60,3 +62,23 @@ def test_post_treatment_covariate_biases_the_estimate():
 def test_diff_in_means_known_values():
     r = diff_in_means(np.array([1.0, 2.0, 3.0, 4.0]), np.array([2.0, 3.0, 4.0, 5.0]))
     assert abs(r["diff"] - 1.0) < 1e-12 and r["ci_low"] < 1 < r["ci_high"]
+
+
+def test_small_unequal_samples_match_welch_t_inference():
+    a, b = np.array([1., 2., 7.]), np.array([3., 4., 5., 6., 7.])
+    expected = stats.ttest_ind(b, a, equal_var=False)
+    result = diff_in_means(a, b)
+    assert result["p_value"] == pytest.approx(expected.pvalue)
+    assert result["ci_low"] == pytest.approx(expected.confidence_interval().low)
+    assert result["ci_high"] == pytest.approx(expected.confidence_interval().high)
+
+
+def test_cuped_rejects_covariates_misaligned_between_arms():
+    with pytest.raises(ValueError, match="align"):
+        cuped_test([1, 2], [1], [3, 4], [2, 3, 4])
+
+
+@pytest.mark.parametrize("a,b", [([1], [2, 3]), ([1, float('nan')], [2, 3]), ([1, 1], [2, 2])])
+def test_welch_rejects_undefined_inference(a, b):
+    with pytest.raises(ValueError):
+        diff_in_means(a, b)
