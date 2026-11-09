@@ -58,3 +58,36 @@ def test_msprt_ratio_grows_with_effect_and_is_one_at_zero_information():
 def test_always_valid_p_never_increases_and_stays_in_unit_interval():
     p = always_valid_p(np.array([0.5, 2.0, 1.0, 40.0, 3.0]))
     assert np.all(np.diff(p) <= 0) and p.max() <= 1 and abs(p[-1] - 0.025) < 1e-12
+
+
+def test_explicit_equal_fractions_match_integer_looks():
+    assert np.allclose(gs_boundaries([0.25, 0.5, 0.75, 1.0]), gs_boundaries(4), atol=1e-9)
+
+
+def test_unequal_spacing_changes_boundaries_and_keeps_order_of_spending():
+    b = gs_boundaries([0.1, 0.3, 1.0], spending=spend_obf)
+    assert b[0] > b[1] > b[2] > 1.96
+    assert not np.allclose(b, gs_boundaries(3), atol=0.05)
+
+
+def test_unequal_spacing_holds_type_one_error_by_monte_carlo():
+    rng = np.random.default_rng(3)
+    t = np.array([0.1, 0.25, 0.6, 1.0])
+    for spending in (spend_obf, spend_pocock):
+        b = gs_boundaries(t, spending=spending)
+        steps = rng.standard_normal((200_000, len(t))) * np.sqrt(np.diff(np.concatenate([[0.0], t])))
+        z = np.abs(np.cumsum(steps, axis=1)) / np.sqrt(t)
+        assert abs(float((z > b).any(axis=1).mean()) - 0.05) < 0.004
+
+
+def test_look_before_the_end_spends_less_than_full_alpha():
+    b = gs_boundaries([0.5, 0.8], spending=spend_pocock)
+    assert b[-1] > 1.96                                   # less than alpha spent in total, so the cutoff is stricter than fixed-sample
+    assert np.all(np.isfinite(b))
+
+
+def test_invalid_look_times_are_refused():
+    import pytest
+    for bad in ([], [0.0, 1.0], [0.5, 0.5, 1.0], [0.6, 0.4], [0.5, 1.2], [0.5, float("nan")], [[0.5, 1.0]]):
+        with pytest.raises(ValueError):
+            gs_boundaries(bad)
