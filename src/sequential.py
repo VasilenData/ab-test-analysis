@@ -37,18 +37,34 @@ def _survive(fy: np.ndarray, ys: np.ndarray, c: float, tk: float) -> float:
     return float(fy[np.abs(ys) < c * np.sqrt(tk)].sum() * (ys[1] - ys[0]))
 
 
-def gs_boundaries(looks: int, alpha: float = 0.05, spending=spend_obf, grid: int = 3001) -> np.ndarray:
-    """Two-sided z-boundaries for `looks` equally spaced looks.
+def _look_times(looks) -> np.ndarray:
+    """Information fractions for the looks: an int means equally spaced, a sequence is used as given."""
+    if np.ndim(looks) == 0:
+        _positive_integer(looks, "looks")
+        return np.arange(1, looks + 1) / looks
+    t = np.asarray(looks, dtype=float)
+    if (t.ndim != 1 or not len(t) or not np.isfinite(t).all()
+            or t[0] <= 0 or t[-1] > 1 or (np.diff(t) <= 0).any()):
+        raise ValueError("look times must be a nonempty strictly increasing vector in (0, 1]")
+    return t
+
+
+def gs_boundaries(looks, alpha: float = 0.05, spending=spend_obf, grid: int = 3001) -> np.ndarray:
+    """Two-sided z-boundaries for the looks.
+
+    `looks` is either a number of equally spaced looks or a strictly increasing sequence of information
+    fractions in (0, 1] (for example [0.1, 0.5, 1.0] for unequal spacing). The fraction is the share of the
+    planned sample (or events) observed at the look; the spending function is evaluated at those fractions.
 
     Solved by numerical integration of the Brownian-motion density through the continuation region
     (Armitage-McPherson-Rowe recursion), so each look spends exactly its share of alpha.
     """
-    _positive_integer(looks, "looks")
+    t = _look_times(looks)
+    looks = len(t)
     _positive_integer(grid, "grid")
     _alpha(alpha)
     if grid < 101:
         raise ValueError("numerical integration requires at least 101 grid points")
-    t = np.arange(1, looks + 1) / looks
     cum = spending(t, alpha)
     cum = np.asarray(cum, dtype=float)
     if (cum.shape != t.shape or not np.isfinite(cum).all() or (cum < 0).any()
