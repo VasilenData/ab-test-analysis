@@ -1,11 +1,16 @@
 """Cookie Cats gate_30 vs gate_40 experiment analysis. Run: python -m src.analyze"""
 import json
+import os
+import tempfile
+from pathlib import Path
 
 import pandas as pd
 
 from src.abtest import *
+from src.decision import validate_assignments
 
 df = pd.read_csv("data/cookie_cats.csv")
+validate_assignments(df)
 a, b = df[df.version == "gate_30"], df[df.version == "gate_40"]
 out = {"rows": len(df), "n_a": len(a), "n_b": len(b), "unique_users": int(df.userid.nunique())}
 out["srm_p"] = srm_check(len(a), len(b))
@@ -36,6 +41,17 @@ for name, mask in {"under_30_rounds": df.sum_gamerounds < 30, "30_plus_rounds": 
     s = df[mask]; sa, sb = s[s.version == "gate_30"], s[s.version == "gate_40"]
     seg[name] = {"n": len(s), **two_prop_test(int(sa.retention_7.sum()), len(sa), int(sb.retention_7.sum()), len(sb))}
 out["segments_ret7"] = seg
-with open("reports/results.json", "w") as f:
-    json.dump(out, f, indent=2, default=float)
+destination = Path("reports/results.json")
+destination.parent.mkdir(parents=True, exist_ok=True)
+temporary = None
+try:
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=destination.parent, delete=False) as output:
+        temporary = Path(output.name)
+        json.dump(out, output, indent=2, default=float, allow_nan=False)
+        output.flush()
+        os.fsync(output.fileno())
+    os.replace(temporary, destination)
+finally:
+    if temporary is not None:
+        temporary.unlink(missing_ok=True)
 print(json.dumps(out, indent=2, default=float))
