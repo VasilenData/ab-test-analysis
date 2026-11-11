@@ -14,6 +14,7 @@ A tested experimentation toolkit (fixed-sample tests, sequential testing, CUPED)
 - **Multiple-testing correction** (Holm) across the two retention metrics.
 - **Bayesian check:** P(gate_40 better) is 0.1% for day-7 retention.
 - **A/A validation:** randomly splitting the data into fake arms gives 5.0% and 5.4% false positives, close to the nominal 5% in this simulation.
+- **Small-sample exact check.** `fisher_exact_test` gives a two-sided Fisher exact p-value, and `exact_type_i_error` enumerates the exact false-positive rate of any test (no simulation). With 15 players per arm the pooled z-test rejects a true null 5.5% of the time at a 30% base rate (and is conservative at 0.5% to 4.6% for other rates I tried); Fisher stays below 5% everywhere. At 300 per arm the z-test is within 1 pp of 5%. Cookie Cats is far too large for this to matter; it is a guard for small experiments.
 - **Power:** with this sample the minimum detectable day-7 effect is 0.74 pp. Detecting 0.5 pp would need about 97,700 players per arm.
 - **Engagement (game rounds)** compared after winsorizing at the 99th percentile (493 rounds; the raw max is 49,854, a likely bot or logging error), with a bootstrap CI (-1.30 to +0.72 rounds, no clear difference) and Mann-Whitney (p = 0.050).
 
@@ -58,7 +59,7 @@ Estimates stay unbiased and intervals keep their coverage. A covariate measured 
 - **Frequentist throughout.** The Bayesian check is a sanity number, not a sequential Bayesian design.
 
 ## Next steps
-A binomial-exact boundary check for small samples, and CUPED on a dataset that has a genuine pre-experiment metric.
+CUPED on a dataset that has a genuine pre-experiment metric.
 
 ## Limits, stated plainly
 - Public dataset, one game, one test. Players were randomly assigned by the game studio; I did not run the experiment.
