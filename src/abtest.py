@@ -136,3 +136,30 @@ def aa_false_positive_rate(outcome: np.ndarray, sims: int = 1000, alpha: float =
         xa, xb = outcome[m].sum(), outcome[~m].sum()
         hits += two_prop_test(int(xa), int(m.sum()), int(xb), int((~m).sum()))["p_value"] < alpha
     return hits / sims
+
+
+def fisher_exact_test(x_a: int, n_a: int, x_b: int, n_b: int) -> float:
+    """Two-sided Fisher exact p-value for small samples, where the z-test can be anti-conservative."""
+    _counts(x_a, n_a)
+    _counts(x_b, n_b)
+    return float(stats.fisher_exact([[x_a, n_a - x_a], [x_b, n_b - x_b]])[1])
+
+
+def exact_type_i_error(n_a: int, n_b: int, p: float, test, alpha: float = 0.05) -> float:
+    """Exact (enumerated, no simulation) rejection probability of `test` when both arms have true rate p.
+
+    `test(x_a, n_a, x_b, n_b)` must return a p-value. Feasible for small n only.
+    """
+    _positive_integer(n_a, "n_a")
+    _positive_integer(n_b, "n_b")
+    _alpha(alpha)
+    if not 0 < p < 1:
+        raise ValueError("p must be strictly between 0 and 1")
+    pa = stats.binom.pmf(np.arange(n_a + 1), n_a, p)
+    pb = stats.binom.pmf(np.arange(n_b + 1), n_b, p)
+    total = 0.0
+    for xa in range(n_a + 1):
+        for xb in range(n_b + 1):
+            if test(xa, n_a, xb, n_b) <= alpha:
+                total += pa[xa] * pb[xb]
+    return float(total)
