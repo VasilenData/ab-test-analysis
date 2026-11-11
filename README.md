@@ -91,3 +91,13 @@ The CUPED simulation was regenerated with Welch t inference (seed 11, 2,000 runs
 The public planning, SRM, Holm, bootstrap, Bayesian and A/A helpers reject invalid counts, probabilities, arrays and simulation sizes before calculating a result. Normal-approximation planning requires interior baseline/treatment rates and target power strictly between 0.5 and 1. Sequential spending validates its information fractions and cumulative budget; negative/NaN likelihood ratios cannot produce negative p-values. Zero likelihood evidence maps to p=1 and infinite evidence to p=0, without division warnings.
 
 Seeded invariant checks exercise arm-swap symmetry, Holm permutation/alpha monotonicity, bootstrap translation and spending-budget limits. These are numerical correctness checks, not new empirical evidence of Type-I error control. The historical reports and their stated inferential limitations remain unchanged.
+
+## Assignment-to-decision workflow
+
+`python -m src.decision --out reports/my-new-release` validates one unique participant per assignment, the declared two arms and complete binary outcomes. Optional exposure events require unique event IDs, known participants, matching arms and timestamps after assignment; exposure diagnostics never filter the intention-to-treat denominator. The legacy analysis now uses the same participant contract.
+
+[Cookie Cats decision evidence](reports/decision-cookie-cats/report.json) uses the real 90,189-row source. Its versioned protocol declares day-7 retention as primary and a one-percentage-point day-1 guardrail margin. Both intervals use Bonferroni family coverage. The decision is **retain control because the primary outcome worsens**. SRM p=0.0086 remains a warning below 0.05, above the configured 0.001 alarm.
+
+This protocol was specified **retrospectively after historical results were known**. It is not a preregistered experiment or a new confirmation. The tool also accepts declared preregistration dates and rejects dates after supplied assignments, but it cannot independently verify registration. Cookie Cats has no assignment timestamps, exposure-event log, observation-window maturity evidence or pre-experiment covariate; these remain explicitly unavailable. No exposure analysis, novelty conclusion or real-data CUPED result is fabricated.
+
+The new immutable release contains JSON, a readable HTML report and artifact checksums, published together only after validation. Source, protocol and code identities are recorded. Failure-injection tests preserve the previous release. Use a new output directory for every run; historical reports and simulation results are unchanged.
