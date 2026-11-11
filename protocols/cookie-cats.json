@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "registration": "retrospective",
+  "description": "Illustrative decision protocol defined after the historical Cookie Cats results were known; not a preregistration.",
+  "arms": ["gate_30", "gate_40"],
+  "primary": "retention_7",
+  "guardrails": {"retention_1": 0.01},
+  "alpha": 0.05,
+  "srm_alpha": 0.001,
+  "expected_control_share": 0.5
+}

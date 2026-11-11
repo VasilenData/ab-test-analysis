@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "schema_version": 1,
+    "registration": "retrospective",
+    "description": "Illustrative decision protocol defined after the historical Cookie Cats results were known; not a preregistration.",
+    "arms": [
+      "gate_30",
+      "gate_40"
+    ],
+    "primary": "retention_7",
+    "guardrails": {
+      "retention_1": 0.01
+    },
+    "alpha": 0.05,
+    "srm_alpha": 0.001,
+    "expected_control_share": 0.5
+  },
+  "registration_verified": false,
+  "decision": "retain_control_primary_harm",
+  "scope": "retrospective illustration",
+  "participants": 90189,
+  "arm_counts": {
+    "gate_30": 44700,
+    "gate_40": 45489
+  },
+  "denominator": "intention to treat: one row per assigned participant; no exposure filtering",
+  "srm": {
+    "p_value": 0.008607987810836262,
+    "alarm_threshold": 0.001,
+    "warning_below_0_05": true
+  },
+  "metrics": {
+    "retention_7": {
+      "p_a": 0.19020134228187918,
+      "p_b": 0.18200004396667327,
+      "diff": -0.008201298315205913,
+      "ci_low": -0.014011045583386415,
+      "ci_high": -0.00239155104702541,
+      "rel_lift": -0.043119034896460164,
+      "z": -3.164358912748191,
+      "p_value": 0.001554249975614329
+    },
+    "retention_1": {
+      "p_a": 0.4481879194630872,
+      "p_b": 0.44228274967574577,
+      "diff": -0.005905169787341458,
+      "ci_low": -0.013323971372494275,
+      "ci_high": 0.001513631797811361,
+      "rel_lift": -0.01317565585974659,
+      "z": -1.7840862247974725,
+      "p_value": 0.07440965529691913
+    }
+  },
+  "guardrails_pass": {
+    "retention_1": false
+  },
+  "interval_method": "Bonferroni simultaneous Wald intervals; sparse or constant arms require another design",
+  "exposure": {
+    "status": "unavailable",
+    "reason": "source has no exposure-event log",
+    "exposed_participants": null
+  },
+  "assignment_timestamps": "unavailable",
+  "unavailable": [
+    "pre-experiment covariate/CUPED",
+    "observation-window maturity without event timestamps",
+    "independent randomization audit"
+  ],
+  "limits": [
+    "The protocol for Cookie Cats was specified retrospectively after published results were known.",
+    "Missing exposure/timestamps prevent exposure, novelty, maturity and temporal integrity verification.",
+    "No rollout, business impact or independent human review is claimed."
+  ],
+  "provenance": {
+    "source_sha256": "6307c4f4307c3cb5a46b63e7659de0f6377ef1d3735c09368aca25b28e8e5808",
+    "protocol_sha256": "984613b25698fbe063f82cba9f1699ca8cf3f791ed63a692aa7bcad4799544b4",
+    "code_sha256": "f1a4c9fed72774733a22473ea0691d0acf820a42a92b99bcc231c889b388e671",
+    "inference_code_sha256": "4c2eae55f9bd3b7499283409a127ac2d7801ba1effeab75e6d698e20a434f4cb",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  }
+}
