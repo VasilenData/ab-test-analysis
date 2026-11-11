@@ -61,3 +61,50 @@ def test_constant_equal_arms_do_not_crash_or_claim_zero_uncertainty(successes):
 def test_invalid_conversion_counts_fail_clearly(args):
     with pytest.raises(ValueError, match="counts"):
         two_prop_test(*args)
+
+
+def _z_p(xa, na, xb, nb):
+    return two_prop_test(xa, na, xb, nb)["p_value"]
+
+
+def test_fisher_known_value():
+    # Tea-tasting table [[3, 1], [1, 3]]: two-sided p = 34/70
+    assert fisher_exact_test(3, 4, 1, 4) == pytest.approx(34 / 70)
+
+
+def test_fisher_identical_arms_p_one():
+    assert fisher_exact_test(5, 20, 5, 20) == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("args", [(-1, 10, 1, 10), (11, 10, 1, 10), (1, 0, 1, 10), (True, 10, 1, 10)])
+def test_fisher_invalid_counts(args):
+    with pytest.raises(ValueError):
+        fisher_exact_test(*args)
+
+
+def test_fisher_never_exceeds_alpha_on_small_samples():
+    for p in (0.05, 0.1, 0.3, 0.5):
+        assert exact_type_i_error(15, 15, p, fisher_exact_test) <= 0.05 + 1e-12
+
+
+def test_z_test_is_anticonservative_at_small_n():
+    # Exact enumeration: with n=15 per arm and p=0.3 the pooled z-test rejects (5.5%)
+    # a true null more than the nominal 5%, though at other p it is conservative (0.5% to 4.6%).
+    worst = max(exact_type_i_error(15, 15, p, _z_p) for p in (0.05, 0.1, 0.3, 0.5))
+    assert worst > 0.05
+
+
+def test_z_test_near_nominal_at_large_n():
+    assert exact_type_i_error(300, 300, 0.3, _z_p) == pytest.approx(0.05, abs=0.01)
+
+
+def test_exact_type_i_error_trivial_tests():
+    assert exact_type_i_error(5, 5, 0.4, lambda *a: 0.0) == pytest.approx(1.0)
+    assert exact_type_i_error(5, 5, 0.4, lambda *a: 1.0) == 0.0
+
+
+@pytest.mark.parametrize("kw", [{"p": 0.0}, {"p": 1.0}, {"n_a": 0}, {"alpha": 1.5}])
+def test_exact_type_i_error_validation(kw):
+    args = {"n_a": 5, "n_b": 5, "p": 0.3, "test": _z_p, "alpha": 0.05} | kw
+    with pytest.raises(ValueError):
+        exact_type_i_error(**args)
